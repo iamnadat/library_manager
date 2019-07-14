@@ -63,7 +63,8 @@ router.get("/:id", function(req,res,next) {
       res.render("books/show",{book: book, title: book.title});
     } else {
       var err = createError(404, 'This book does not exist!');
-      res.render("error",{message:"Ooooops !!",error:err});
+      // res.render("error",{message:"Ooooops !!",error:err});
+      next(err);
     }    
   });
 });
