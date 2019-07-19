@@ -10,5 +10,8 @@ div
 div
 	label(for="year") Year:
 	input(type="number", name="year" value=book.year)
-a(class="button", href="../") Back
+if currentPage	
+	a(class="button", href="/books/page/" + currentPage) Back
+else 
+	a(class="button", href="../") Back
 input(type="submit")

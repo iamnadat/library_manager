@@ -19,3 +19,8 @@ block content
 					td= book.author
 					td= book.genre
 					td= book.year
+	//- a(id="previous-button" class="button", href="/books/page/1") Previous
+	//- a(id="next-button" class="button", href="/books/page/2") Next
+	- var pageNo = 1;
+	while pageNo <= noOfPages
+		a(class="button pagination", href="/books/page/" + pageNo)= pageNo++

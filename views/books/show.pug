@@ -1,14 +1,17 @@
 extends ../layout
 
 block content
-    include errors
-    h1= title
-    p= 'Author: ' + book.author
-    p= 'Genre: ' + book.genre
-    p= 'Year: ' + book.year
+  include errors
+  h1= title
+  p= 'Author: ' + book.author
+  p= 'Genre: ' + book.genre
+  p= 'Year: ' + book.year
+  if currentPage	
+    a(class="button", href="/books/page/" + currentPage) Back
+  else 
     a(class="button", href="../") Back
-    | 
-    a(class="button", href="/books/" + book.id + "/edit") Edit Book
-    |  
-    a(class="button", href="/books/" + book.id + "/delete") Delete Book
+  | 
+  a(class="button", href="/books/" + book.id + "/edit") Edit Book
+  |
+  a(class="button", href="/books/" + book.id + "/delete") Delete Book
     
