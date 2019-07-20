@@ -1,6 +1,8 @@
 var createError = require('http-errors');
 var express = require('express');
 var router = express.Router();
+var sequelize = require('sequelize');
+var Op = sequelize.Op;
 var Book = require("../models").Book;
 
 let currentPage;
@@ -9,7 +11,7 @@ let offset;
 
 /* GET route to show all books */
 router.get("/", function(req, res, next) {
-  res.redirect("/books/page/1")
+  res.redirect("/books/page/1");
   // Book.findAll({offset: 30,limit: 2}).then((books) => {
   //   res.render("books/index", { title: "Books", books:books });
   // });
@@ -59,6 +61,64 @@ router.get("/page/:id", function(req,res,next){
     });
   }
 });
+
+router.post('/page/:id', function(req,res,next){
+  page =  parseInt(req.params.id);
+  var query = req.body.query;
+  if(!query){
+    res.redirect("/books/page/1");
+  }
+  if(isNaN(page)){
+    var error = createError(500, 'Page is not a number');
+    next(error);
+  } else{
+    offset = (page * limit) - limit;
+    currentPage = page;
+    Book.findAndCountAll({
+      offset: offset,
+      limit: limit,
+      where: {
+        [Op.or] : [
+          {
+            title: {
+              [Op.like]: `%${query}%`
+            }
+          },
+          {
+            author: {
+              [Op.like]: `%${query}%`
+            }
+          },
+          {
+            genre: {
+              [Op.like]: `%${query}%`
+            }
+          },
+          {
+            year: {
+              [Op.like]: `%${query}%`
+            }
+          }
+        ]
+      }
+    })
+    .then(books => {
+      if(books.rows.length > 0){
+        var noOfPages = Math.ceil(books.count / limit);
+        console.log(noOfPages);
+        res.render("books/index", { title: "Books", books:books.rows, noOfPages:noOfPages });
+      } else {
+        var error = createError(500, 'No books found');
+        next(error);
+      }
+    })
+    .catch((error) =>{
+      res.send(500,error);
+      next(error);
+    });
+  }  
+});
+
 
 /* GET router for new book */
 router.get("/new", function(req, res, next) {
@@ -133,6 +193,5 @@ router.delete("/:id", function(req,res,next){
     res.redirect("/books"); 
   });
 });
-
 
 module.exports = router;
