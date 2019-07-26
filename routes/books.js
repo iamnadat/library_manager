@@ -11,30 +11,33 @@ let offset;
 
 /* GET route to show all books */
 router.get("/", function(req, res, next) {
+  // redirect to show page one of books
   res.redirect("/books/page/1");
-  // Book.findAll({offset: 30,limit: 2}).then((books) => {
-  //   res.render("books/index", { title: "Books", books:books });
-  // });
 });
 
-/* GET route to create a ne book */
+/* GET route to create a new book */
 router.post("/", function(req,res,next){
+  // try to create book
   Book.create(req.body).then(function(book){
+    // if successfull redirect to show book
     res.redirect("/books/" + book.id);
   }).catch(function(error){
+    // if there is a validation error render error, otherwise throw error
     if(error.name === "SequelizeValidationError") {
       res.render("books/new",{book:Book.build(req.body),errors:error.errors, title:"New Book"});
     } else {
       throw error;
     }
   }).catch(function(error){
+    // catch other error 
     res.send(500,error);
   });
 });
 
-/* holder for pagination*/
+/* GET route for pagination */
 router.get("/page/:id", function(req,res,next){
   page =  parseInt(req.params.id);
+  // check to see if param is actualy a number
   if(isNaN(page)){
     var error = createError(500, 'Page is not a number');
     next(error);
@@ -62,21 +65,21 @@ router.get("/page/:id", function(req,res,next){
   }
 });
 
+/* POST router for when a search happens */
 router.post('/page/:id', function(req,res,next){
   page =  parseInt(req.params.id);
   var query = req.body.query;
+  // if the query is empty redirect to show all books on page 1
   if(!query){
     res.redirect("/books/page/1");
   }
+  // check if poge is number
   if(isNaN(page)){
     var error = createError(500, 'Page is not a number');
     next(error);
   } else{
-    offset = (page * limit) - limit;
-    currentPage = page;
+    // build query
     Book.findAndCountAll({
-      offset: offset,
-      limit: limit,
       where: {
         [Op.or] : [
           {
@@ -104,9 +107,7 @@ router.post('/page/:id', function(req,res,next){
     })
     .then(books => {
       if(books.rows.length > 0){
-        var noOfPages = Math.ceil(books.count / limit);
-        console.log(noOfPages);
-        res.render("books/index", { title: "Books", books:books.rows, noOfPages:noOfPages });
+        res.render("books/index", { title: "Books", books:books.rows});
       } else {
         var error = createError(500, 'No books found');
         next(error);
@@ -139,14 +140,14 @@ router.get("/:id/edit", function(req,res,next){
   });
 });
 
-
+/*  GET route for delete book */
 router.get("/:id/delete", function(req,res,next){
   Book.findByPk(req.params.id).then(function(book){
     res.render("books/delete", {book: book, title: "Delete Book"});
   });
 });
 
-/* Show a  book form. */
+/* Get route to Show a book form. */
 router.get("/:id", function(req,res,next) {
   Book.findByPk(req.params.id).then(function(book){
     if(book) {
@@ -159,7 +160,7 @@ router.get("/:id", function(req,res,next) {
   });
 });
 
-/* Update a  book using put. */
+/* PUT route to Update a book. */
 router.put("/:id", function(req,res,next){
   Book.findByPk(req.params.id).then(function(book){
     if(book) {
@@ -182,6 +183,7 @@ router.put("/:id", function(req,res,next){
   });
 });
 
+/* DELETE route to delet book */
 router.delete("/:id", function(req,res,next){
   Book.findByPk(req.params.id).then(function(book){
     if(book) {
